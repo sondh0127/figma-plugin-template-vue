@@ -1,11 +1,12 @@
 import { defineConfig } from "vite"
-import vue from "@vitejs/plugin-vue"
+import Vue from "@vitejs/plugin-vue"
+import AutoImport from 'unplugin-auto-import/vite'
 
 import { IndexHtmlTransformResult, IndexHtmlTransformContext } from "vite"
 import { Plugin } from "vite"
 import { OutputChunk, OutputAsset } from "rollup"
 
-export function viteSingleFile(): Plugin {
+export function ViteSingleFile(): Plugin {
 	return {
 		name: "vite:singlefile",
 		transformIndexHtml: {
@@ -41,8 +42,9 @@ export function viteSingleFile(): Plugin {
 
 export default defineConfig({
   plugins: [
-		vue(),
-		viteSingleFile()
+		Vue(),
+		ViteSingleFile(),
+		AutoImport({ imports: ['vue', '@vueuse/core'] }),
 	],
   build: {
 		target: "esnext",
