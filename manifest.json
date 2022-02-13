@@ -1,9 +1,10 @@
 {
   "name": "Sigma Interactive",
   "api": "1.0.0",
-  "main": "src/code.js",
+  "main": "lib/code.js",
   "editorType": [
     "figma"
   ],
+  "id": "858477504263032980",
   "ui": "dist/index.html"
 }

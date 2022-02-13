@@ -1,10 +1,35 @@
 import { defineConfig } from "vite"
 import Vue from "@vitejs/plugin-vue"
 import AutoImport from 'unplugin-auto-import/vite'
+import Components from 'unplugin-vue-components/vite'
 
 import { IndexHtmlTransformResult, IndexHtmlTransformContext } from "vite"
 import { Plugin } from "vite"
 import { OutputChunk, OutputAsset } from "rollup"
+
+export default defineConfig({
+	plugins: [
+		Vue(),
+		AutoImport({ imports: ['vue', '@vueuse/core'] }),
+		Components({
+		}),
+		ViteSingleFile(),
+	],
+  build: {
+		target: "esnext",
+		assetsInlineLimit: 100000000,
+		chunkSizeWarningLimit: 100000000,
+		cssCodeSplit: false,
+		brotliSize: false,
+		rollupOptions: {
+			inlineDynamicImports: true,
+			output: {
+				manualChunks: () => "everything.js",
+			},
+		},
+	},
+})
+
 
 export function ViteSingleFile(): Plugin {
 	return {
@@ -39,24 +64,3 @@ export function ViteSingleFile(): Plugin {
 		},
 	}
 }
-
-export default defineConfig({
-  plugins: [
-		Vue(),
-		ViteSingleFile(),
-		AutoImport({ imports: ['vue', '@vueuse/core'] }),
-	],
-  build: {
-		target: "esnext",
-		assetsInlineLimit: 100000000,
-		chunkSizeWarningLimit: 100000000,
-		cssCodeSplit: false,
-		brotliSize: false,
-		rollupOptions: {
-			inlineDynamicImports: true,
-			output: {
-				manualChunks: () => "everything.js",
-			},
-		},
-	},
-})
