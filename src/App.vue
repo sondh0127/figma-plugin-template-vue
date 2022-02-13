@@ -39,10 +39,8 @@ function clearNodeData(){
 const quxType = ref('')
 
 const { pause, resume } = pausableWatch(quxType, (newValue, preValue) => {
-  if (preValue) {
-    console.log('[LOG] ~ file: App.vue ~ line 39 ~ newValue', newValue)
-    emit<SingleNodeDataChange>('SINGLE_NODE_DATA_CHANGE', QUX_TYPE_KEY, newValue)
-  }
+  console.log('[LOG] ~ file: App.vue ~ line 42 ~ newValue', newValue)
+  emit<SingleNodeDataChange>('SINGLE_NODE_DATA_CHANGE', QUX_TYPE_KEY, newValue)
 })
 
 on<SingleNodeDataChange>('SINGLE_NODE_DATA_CHANGE', async (key, data) => {
