@@ -4,10 +4,14 @@
 
 declare module 'vue' {
   export interface GlobalComponents {
-    Button: typeof import('./src/components/Button.vue')['default']
-    Input: typeof import('./src/components/Input.vue')['default']
-    Radio: typeof import('./src/components/Radio.vue')['default']
-    Select: typeof import('./src/components/Select.vue')['default']
+    Button: typeof import('./src/components/base/Button.vue')['default']
+    Divider: typeof import('./src/components/base/Divider.vue')['default']
+    Input: typeof import('./src/components/base/Input.vue')['default']
+    Label: typeof import('./src/components/base/Label.vue')['default']
+    Radio: typeof import('./src/components/base/Radio.vue')['default']
+    Select: typeof import('./src/components/base/Select.vue')['default']
+    TextBoxColor: typeof import('./src/components/base/TextBoxColor.vue')['default']
+    Title: typeof import('./src/components/base/Title.vue')['default']
   }
 }
 

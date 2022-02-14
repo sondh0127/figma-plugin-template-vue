@@ -1,5 +1,6 @@
 
-<script lang="ts" setup>import { Ref } from 'vue';
+<script lang="ts" setup>
+import { Ref } from 'vue';
 
 interface Option {
   label: string;

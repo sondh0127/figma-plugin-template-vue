@@ -1,66 +1,25 @@
 <script lang="ts" setup>
 import { emit, on } from '@create-figma-plugin/utilities'
-import { ClearNodeData, CloseHandler, CreateRectanglesHandler, GetNodeData, RequestNodeData, SetNodeData, SingleNodeDataChange } from './types'
-import { QUX_TYPE_KEY } from './utils';
-import Radio from './components/Radio.vue';
-import Select from './components/Select.vue';
+import { useNodeData } from './logics';
+import { QUX_TYPE, QUX_ON_CLICK_CALLBACK, QUX_ON_CHANGE_CALLBACK, QUX_DATA_BINDING_DEFAULT,
+QUX_DATA_VALUE,
+QUX_STYLE_HOVER_BORDER,
+QUX_STYLE_HOVER_BACKGROUND,
+QUX_STYLE_HOVER_COLOR} from './utils';
+import { TabGroup, TabList, Tab, TabPanels, TabPanel } from '@headlessui/vue'
+import { Ref } from 'vue';
+import { ElementType } from './types';
 
-const count = ref(5)
+const quxType = useNodeData(QUX_TYPE) as Ref<ElementType>;
 
-const create = () => {
-  emit<CreateRectanglesHandler>('CREATE_RECTANGLES', count.value)
-}
+const quxOnClickCallback = useNodeData(QUX_ON_CLICK_CALLBACK);
+const quxOnChangeCallback = useNodeData(QUX_ON_CHANGE_CALLBACK);
+const quxDataBindingDefault = useNodeData(QUX_DATA_BINDING_DEFAULT);
+const quxDataValue = useNodeData(QUX_DATA_VALUE);
 
-const cancel = () => {
-  emit<CloseHandler>('CLOSE')
-}
-
-const _data = ref(null)
-
-on<GetNodeData>('GET_NODE_DATA', (data) => {
-  console.log('[LOG] ~ file: App.vue ~ line 20 ~ data', data)
-  _data.value = data
-})
-
-function requestNodeData() {
-  emit<RequestNodeData>('REQUEST_NODE_DATA')
-}
-
-const hello = ref('')
-
-function setNodeData() {
-  emit<SetNodeData>('SET_NODE_DATA', { hello: hello.value })
-}
-
-function clearNodeData(){
-  emit<ClearNodeData>('CLEAR_NODE_DATA')
-}
-
-const quxType = ref('')
-
-const { pause, resume } = pausableWatch(quxType, (newValue, preValue) => {
-  console.log('[LOG] ~ file: App.vue ~ line 42 ~ newValue', newValue)
-  emit<SingleNodeDataChange>('SINGLE_NODE_DATA_CHANGE', QUX_TYPE_KEY, newValue)
-})
-
-on<SingleNodeDataChange>('SINGLE_NODE_DATA_CHANGE', async (key, data) => {
-  console.log('[LOG] ~ file: App.vue ~ line 45 ~ key, data', key, data)
-  if (!data) {
-    pause()
-  }
-  switch (key) {
-    case 'quxType':
-      quxType.value = data
-
-      break;
-
-    default:
-      break;
-  }
-  await nextTick()
-  resume()
-})
-
+const quxStyleHoverBackground = useNodeData(QUX_STYLE_HOVER_BACKGROUND);
+const quxStyleHoverBorder = useNodeData(QUX_STYLE_HOVER_BORDER);
+const quxStyleHoverColor = useNodeData(QUX_STYLE_HOVER_COLOR);
 
 const elementTypeOptions = computed(() => {
   return [
@@ -125,31 +84,93 @@ const elementTypeOptions = computed(() => {
   ]
 })
 
+const hexColor = ref('')
+const opacity = ref('')
+
+function handleHexColorInput(event: Event) {
+  const newHexColor = (event.currentTarget as HTMLInputElement).value
+  console.log(newHexColor)
+  hexColor.value = newHexColor
+}
+
+function handleOpacityInput(event: Event) {
+  const newOpacity = (event.currentTarget as HTMLInputElement).value
+  console.log(newOpacity)
+  opacity.value = newOpacity
+}
 </script>
 
 <template>
-  <h2>Rectangle Creator</h2>
-  <p>Count: <Input v-model:value="count"/> </p>
-  <p>Hello: <Input v-model:value="hello"/> </p>
-  <div class="flex space-x-1 flex-wrap">
-    <Button @click="create">Create</Button>
-    <Button @click="cancel">Cancel</Button>
-    <Button @click="setNodeData">Set</Button>
-    <Button @click="requestNodeData">Get</Button>
-    <Button @click="clearNodeData">Clear</Button>
-  </div>
-  <div>
-    <Input v-model:value="quxType"/>
-    <Select :options="elementTypeOptions" v-model:value="quxType">
-    </Select>
-  </div>
+    <TabGroup>
+      <TabList class="flex py-1 py-2">
+        <Tab v-slot="{ selected }" as="template">
+          <Title v-if="selected">General</Title>
+          <Label v-else>General</Label>
+        </Tab>
+        <Tab v-slot="{ selected }" as="template">
+          <Title v-if="selected">Options</Title>
+          <Label v-else>Options</Label>
+        </Tab>
+        <Tab v-slot="{ selected }" as="template">
+          <Title v-if="selected">Styles</Title>
+          <Label v-else>Styles</Label>
+        </Tab>
+      </TabList>
+      <TabPanels>
+        <Divider></Divider>
+        <TabPanel>
+          <Title>Element Type</Title>
+          <div class="flex pl-2- pr-1">
+            <Select class="flex-1" :options="elementTypeOptions" v-model:value="quxType" />
+          </div>
+        </TabPanel>
+        <TabPanel>
+          <Title>Method Binding</Title>
+          <div class="flex space-x-2 pl-2 pr-1">
+            <Input class="flex-grow" v-model:value="quxOnClickCallback" />
+            <Label>Click</Label>
+          </div>
+          <div v-if="quxType === 'TextBox'" class="flex space-x-2 pl-2 pr-1">
+            <Input class="flex-grow" v-model:value="quxOnChangeCallback" />
+            <Label>Change</Label>
+          </div>
+
+          <Divider></Divider>
+          <Title>Data Binding</Title>
+          <div class="flex space-x-2 pl-2 pr-1">
+            <Input class="flex-grow" v-model:value="quxDataBindingDefault" />
+            <Label>Input/Output</Label>
+          </div>
+
+          <Divider></Divider>
+          <Title>Data Value</Title>
+          <div class="flex space-x-2 pl-2 pr-1">
+            <Input class="flex-grow" v-model:value="quxDataValue" />
+            <Label>Value</Label>
+          </div>
+        </TabPanel>
+        <TabPanel>
+          <Title>Hover</Title>
+          <div class="flex space-x-2 pl-2 pr-1">
+            <TextBoxColor
+              :hex-color="hexColor"
+              @hex-color-input="handleHexColorInput"
+              v-model:opacity="opacity"
+            />
+          </div>
+        </TabPanel>
+      </TabPanels>
+    </TabGroup>
 </template>
 
 <style>
-*, :after, :before {
+*,
+:after,
+:before {
   box-sizing: content-box;
 }
-*, ::focus {
+*,
+::focus {
   outline: none;
 }
 </style>

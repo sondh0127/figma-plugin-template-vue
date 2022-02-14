@@ -4,6 +4,7 @@ import './assets/style/index.scss'
 import { setup} from '@twind/cdn'
 
 setup({
+  preflight: false
 })
 
 const app = createApp(App)

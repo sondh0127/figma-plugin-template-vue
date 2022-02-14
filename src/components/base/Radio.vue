@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { randomId } from '../utils';
+import { randomId } from '../../utils';
 const uniqueId = randomId()
 
 interface Props {
