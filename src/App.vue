@@ -85,7 +85,7 @@ const elementTypeOptions = computed(() => {
 })
 
 const hexColor = ref('')
-const opacity = ref('')
+const opacity = ref(100)
 
 function handleHexColorInput(event: Event) {
   const newHexColor = (event.currentTarget as HTMLInputElement).value

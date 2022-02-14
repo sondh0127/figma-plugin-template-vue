@@ -13,7 +13,7 @@ interface Props {
   hexColor: string
   hexColorName?: string
   hexColorPlaceholder?: string
-  opacity: string
+  opacity: number
   opacityName?: string
   opacityPlaceholder?: string
   // onOpacityNumericValueInput?: OnValueChange<null | number, OpacityName>
@@ -138,7 +138,7 @@ function parseOpacity(opacity: string): number {
 }
 
 const parsedOpacity = computed(() => {
-  return parseOpacity(props.opacity)
+  return parseOpacity(vOpacity.value)
 })
 
 function handleHexColorSelectorFocus(event: Event) {
@@ -261,12 +261,16 @@ function handleHexColorKeyDown(event: KeyboardEvent) {
 }
 
 function handleHexColorMouseUp(event: MouseEvent) {
-   if (props.hexColor !== MIXED_STRING) {
+  if (props.hexColor !== MIXED_STRING) {
     return
   }
   event.preventDefault()
 }
 
+watch(vOpacity, (newOpacity) => {
+  const rgba = createRgbaColor(props.hexColor, newOpacity + '')
+  emit('rgba-color-value-input', rgba)
+})
 </script>
 
 <template>
@@ -320,7 +324,16 @@ function handleHexColorMouseUp(event: MouseEvent) {
         type="text"
         :value="hexColor === MIXED_STRING ? 'Mixed' : hexColor"
       />
-      <!-- <Input v-model:value="vOpacity" /> -->
+      <NumInput
+        hide-focus
+        class="input opacityInput"
+        v-model:value="vOpacity"
+        icon="horizontal-padding"
+        :min="0"
+        :max="100"
+        :height="28"
+        unit="%">
+      </NumInput>
     <div class="divider" />
     <div class="border" />
   </div>
@@ -399,9 +412,6 @@ function handleHexColorMouseUp(event: MouseEvent) {
 .hexColorInput {
   flex: 0 0 97px;
   padding-left: 32px;
-}
-.opacityInput {
-  padding-left: var(--size-xxsmall);
 }
 
 .border {

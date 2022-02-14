@@ -57,7 +57,7 @@ const value = useVModel(props, 'value')
 		display: flex;
 		align-items: center;
 		width: 100%;
-		height: 32px;
+		height: 28px;
 		margin: 1px 0 1px 0;
 		padding: var(--size-xxsmall) var(--size-xxxsmall) var(--size-xxsmall)
 			var(--size-xxsmall);

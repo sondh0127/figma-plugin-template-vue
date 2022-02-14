@@ -2,6 +2,8 @@ import { defineConfig } from "vite"
 import Vue from "@vitejs/plugin-vue"
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
+import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
+import path from 'path'
 
 import { IndexHtmlTransformResult, IndexHtmlTransformContext } from "vite"
 import { Plugin } from "vite"
@@ -14,6 +16,9 @@ export default defineConfig({
 		Components({
 		}),
 		ViteSingleFile(),
+		createSvgIconsPlugin({
+			iconDirs: [path.resolve(process.cwd(), 'src/assets/icons')],
+		}),
 	],
   build: {
 		target: "esnext",

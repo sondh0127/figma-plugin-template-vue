@@ -8,8 +8,10 @@ declare module 'vue' {
     Divider: typeof import('./src/components/base/Divider.vue')['default']
     Input: typeof import('./src/components/base/Input.vue')['default']
     Label: typeof import('./src/components/base/Label.vue')['default']
+    NumInput: typeof import('./src/components/base/NumInput.vue')['default']
     Radio: typeof import('./src/components/base/Radio.vue')['default']
     Select: typeof import('./src/components/base/Select.vue')['default']
+    SvgIcon: typeof import('./src/components/base/SvgIcon.vue')['default']
     TextBoxColor: typeof import('./src/components/base/TextBoxColor.vue')['default']
     Title: typeof import('./src/components/base/Title.vue')['default']
   }
