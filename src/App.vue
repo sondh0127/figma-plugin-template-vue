@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { emit, on } from "@create-figma-plugin/utilities";
 import { useNodeData } from "./logics";
 import {
   QUX_TYPE,
@@ -13,6 +12,14 @@ import {
   QUX_STYLE_FOCUS_BACKGROUND,
   QUX_STYLE_FOCUS_BORDER,
   QUX_STYLE_FOCUS_COLOR,
+  QUX_STYLE_CURSOR,
+  QUX_STYLE_DISPLAY,
+  QUX_STYLE_MAX_WIDTH,
+  QUX_STYLE_MIN_WIDTH,
+  QUX_WRAP_CONTENT,
+  QUX_BREAKPOINT_MOBILE,
+  QUX_BREAKPOINT_TABLET,
+  QUX_BREAKPOINT_DESKTOP,
 } from "./utils";
 import { TabGroup, TabList, Tab, TabPanels, TabPanel } from "@headlessui/vue";
 import { Ref } from "vue";
@@ -33,12 +40,16 @@ const quxStyleFocusBackground = useNodeData(QUX_STYLE_FOCUS_BACKGROUND);
 const quxStyleFocusBorder = useNodeData(QUX_STYLE_FOCUS_BORDER);
 const quxStyleFocusColor = useNodeData(QUX_STYLE_FOCUS_COLOR);
 
-watchEffect(() => {
-  console.log(
-    "[LOG] ~ file: App.vue ~ line 26 ~ quxStyleHoverBackground",
-    quxStyleHoverBackground
-  );
-});
+const quxStyleCursor = useNodeData(QUX_STYLE_CURSOR);
+const quxStyleDisplay = useNodeData(QUX_STYLE_DISPLAY);
+
+const quxStyleMinWidth = useNodeData(QUX_STYLE_MIN_WIDTH);
+const quxStyleMaxWidth = useNodeData(QUX_STYLE_MAX_WIDTH);
+const quxWrapContent = useNodeData(QUX_WRAP_CONTENT);
+
+const quxBreakpointMobile = useNodeData(QUX_BREAKPOINT_MOBILE);
+const quxBreakpointTablet = useNodeData(QUX_BREAKPOINT_TABLET);
+const quxBreakpointDesktop = useNodeData(QUX_BREAKPOINT_DESKTOP);
 
 const elementTypeOptions = computed(() => {
   return [
@@ -102,6 +113,33 @@ const elementTypeOptions = computed(() => {
     },
   ];
 });
+
+const cursorOptions = computed(() => {
+  return [
+    {
+      label: "Default",
+      value: "",
+    },
+    {
+      label: "Pointer",
+      value: "pointer",
+    },
+  ];
+});
+
+const displayOptions = computed(() => {
+  return [
+    {
+      label: "Block (Newline)",
+      value: "",
+    },
+    {
+      label: "Inline",
+      value: "inline",
+    },
+  ]
+})
+
 </script>
 
 <template>
@@ -160,13 +198,15 @@ const elementTypeOptions = computed(() => {
 
           <Label>Fill</Label>
         </div>
+        <div class="h-2"></div>
         <div class="flex space-x-2 pl-2 pr-1">
-          <TextBoxColor v-model:rgba="quxStyleHoverBackground" />
+          <TextBoxColor v-model:rgba="quxStyleHoverBorder" />
 
           <Label>Stroke</Label>
         </div>
+        <div class="h-2"></div>
         <div class="flex space-x-2 pl-2 pr-1">
-          <TextBoxColor v-model:rgba="quxStyleHoverBackground" />
+          <TextBoxColor v-model:rgba="quxStyleHoverColor" />
 
           <Label>Text</Label>
         </div>
@@ -175,18 +215,56 @@ const elementTypeOptions = computed(() => {
 
         <Title>Focus</Title>
         <div class="flex space-x-2 pl-2 pr-1">
-          <TextBoxColor v-model:rgba="quxStyleHoverBackground" />
+          <TextBoxColor v-model:rgba="quxStyleFocusBackground" />
 
           <Label>Fill</Label>
         </div>
+        <div class="h-2"></div>
         <div class="flex space-x-2 pl-2 pr-1">
-          <TextBoxColor v-model:rgba="quxStyleHoverBackground" />
+          <TextBoxColor v-model:rgba="quxStyleFocusBorder" />
           <Label>Stroke</Label>
         </div>
+        <div class="h-2"></div>
         <div class="flex space-x-2 pl-2 pr-1">
-          <TextBoxColor v-model:rgba="quxStyleHoverBackground" />
+          <TextBoxColor v-model:rgba="quxStyleFocusColor" />
           <Label>Text</Label>
         </div>
+
+        <Divider></Divider>
+        <Title>Cursor</Title>
+        <div class="flex space-x-2 pl-2 pr-1">
+          <Radio class="flex-1" :options="cursorOptions" v-model:value="quxStyleCursor" />
+        </div>
+
+        <Divider></Divider>
+        <Title>Display</Title>
+        <div class="flex space-x-2 pl-2 pr-1">
+          <Radio class="flex-1" :options="displayOptions" v-model:value="quxStyleDisplay" />
+        </div>
+
+        <Divider></Divider>
+        <Title>Responsive</Title>
+        <div class="flex space-x-2 pl-2 pr-1">
+          <Input class="flex-grow" v-model:value="quxStyleMinWidth" />
+          <Label>Min Width</Label>
+        </div>
+        <div class="flex space-x-2 pl-2 pr-1">
+          <Input class="flex-grow" v-model:value="quxStyleMaxWidth" />
+          <Label>Max Width</Label>
+        </div>
+        <div>
+          <Checkbox v-model:checked="quxWrapContent">Wrap Content</Checkbox>
+        </div>
+
+        <Divider></Divider>
+        <Title>Breakpoints</Title>
+        <div class="flex space-x-2 pl-2 pr-1">
+          <Checkbox v-model:checked="quxBreakpointMobile">Phone</Checkbox>
+          <Checkbox v-model:checked="quxBreakpointTablet">Tablet</Checkbox>
+          <Checkbox v-model:checked="quxBreakpointDesktop">Desktop</Checkbox>
+        </div>
+
+        <Divider></Divider>
       </TabPanel>
     </TabPanels>
   </TabGroup>

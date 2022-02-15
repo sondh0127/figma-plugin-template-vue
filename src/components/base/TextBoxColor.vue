@@ -1,5 +1,11 @@
 <script lang="ts" setup>
-import { MIXED_STRING, convertNamedColorToHexColor, isValidHexColor, convertHexColorToRgbColor, convertRgbColorToHexColor } from '@create-figma-plugin/utilities';
+import {
+  MIXED_STRING,
+  convertNamedColorToHexColor,
+  isValidHexColor,
+  convertHexColorToRgbColor,
+  convertRgbColorToHexColor
+} from '@create-figma-plugin/utilities';
 import { Ref } from 'vue';
 
 const EMPTY_STRING = ''
@@ -30,19 +36,40 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   (name: 'update:rgba', value: RGBA): void
 }>()
+const vRgba = useVModel(props, 'rgba')
+
+function getOpacityFromRgba(rgba: string): number {
+  const [, , , opacity] = rgba.split(',')
+  return parseFloat(opacity) * 100
+}
+
+function getHexFromRgba(rgba: string): string |null  {
+  const [r, g, b] = rgba.replace(/^rgba\(|\s|\)/g, '').split(',')
+  const ret = convertRgbColorToHexColor({
+    r: parseInt(r) / 255,
+    g: parseInt(g) / 255,
+    b: parseInt(b) / 255,
+  })
+  return ret
+}
+
+
 
 const sourceHexColor = useVModel(props, 'hexColor')
-const vHexColor = ref('')
+const vHexColor = ref(getHexFromRgba(vRgba.value))
 if (sourceHexColor.value)
   syncRef(sourceHexColor, vHexColor)
 
 const sourceOpacity = useVModel(props, 'opacity')
-const vOpacity = ref(100)
+const vOpacity = ref(getOpacityFromRgba(vRgba.value).toString())
 if (sourceOpacity.value)
   syncRef(sourceOpacity, vOpacity)
 
-const vRgba = useVModel(props, 'rgba')
 
+watch(vRgba, (newValue, oldValue) => {
+  vHexColor.value = getHexFromRgba(newValue)
+  vOpacity.value = getOpacityFromRgba(newValue).toString()
+})
 const originalHexColor = ref(EMPTY_STRING)
 const hexColorInputElementRef = ref() as Ref<HTMLInputElement>
 const isRevertOnEscapeKeyDownRef = ref(false)

@@ -5,6 +5,7 @@
 declare module 'vue' {
   export interface GlobalComponents {
     Button: typeof import('./src/components/base/Button.vue')['default']
+    Checkbox: typeof import('./src/components/base/Checkbox.vue')['default']
     Divider: typeof import('./src/components/base/Divider.vue')['default']
     Input: typeof import('./src/components/base/Input.vue')['default']
     Label: typeof import('./src/components/base/Label.vue')['default']

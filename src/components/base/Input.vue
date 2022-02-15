@@ -2,15 +2,23 @@
 import { randomId } from '../../utils';
 const uniqueId = randomId()
 
-const props = defineProps({
-  icon: { type: String, default: undefined },
-  iconText: { type: String, default: undefined },
-  value: { type: String || Number, default: undefined },
-  placeholder: { type: String, default: undefined },
-  disabled: Boolean,
-  border: Boolean,
-  spinning: Boolean
-});
+interface Props {
+	icon?: string;
+	iconText?: string;
+	value?: string | number;
+	placeholder?: string;
+	disabled?: boolean;
+	border?: boolean;
+	spinning?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+	icon: undefined,
+	iconText: undefined,
+	value: undefined,
+	placeholder: undefined,
+	border: true,
+})
 
 const value = useVModel(props, 'value')
 </script>
