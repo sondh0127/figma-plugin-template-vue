@@ -4,7 +4,7 @@ export type ElementType = '' | 'TextBox' | 'Vector' | 'Image' | 'Password' | 'Te
 
 export type DataKeys = 'quxType' | 'quxOnClickCallback' | 'quxOnChangeCallback'
   | 'quxDataBindingDefault' | 'quxDataValue' | 'quxStyleHoverBackground' | 'quxStyleHoverBorder'
-  | 'quxStyleHoverColor';
+  | 'quxStyleHoverColor' | 'quxStyleFocusBackground' | 'quxStyleFocusBorder' | 'quxStyleFocusColor';
 export interface SingleNodeDataChange extends EventHandler {
   name: 'SINGLE_NODE_DATA_CHANGE'
   handler: (key: DataKeys, data: string) => void

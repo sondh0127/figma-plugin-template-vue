@@ -10,14 +10,13 @@ interface Props {
   noBorder?: boolean
   propagateEscapeKeyDown?: boolean
   revertOnEscapeKeyDown?: boolean
-  hexColor: string
+  hexColor?: string
   hexColorName?: string
   hexColorPlaceholder?: string
-  opacity: number
+  opacity?: number
   opacityName?: string
   opacityPlaceholder?: string
-  // onOpacityNumericValueInput?: OnValueChange<null | number, OpacityName>
-  // onOpacityValueInput?: OnValueChange<string, OpacityName>
+  rgba?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -25,19 +24,28 @@ const props = withDefaults(defineProps<Props>(), {
   noBorder: false,
   propagateEscapeKeyDown: true,
   revertOnEscapeKeyDown: false,
+  hexColor: '',
+  rgba: '',
 })
 const emit = defineEmits<{
-  (event: 'hex-color-input', e: Event): void
-  (event: 'hex-color-value-input', value: string, hexColorName?: string): void
-  (event: 'rgba-color-value-input', value: null | RGBA): void
-  // (event: 'onOpacityNumericValueInput', value: null | number): void
-  // (event: 'onOpacityValueInput', value: string): void
+  (name: 'update:rgba', value: RGBA): void
 }>()
+
+const sourceHexColor = useVModel(props, 'hexColor')
+const vHexColor = ref('')
+if (sourceHexColor.value)
+  syncRef(sourceHexColor, vHexColor)
+
+const sourceOpacity = useVModel(props, 'opacity')
+const vOpacity = ref(100)
+if (sourceOpacity.value)
+  syncRef(sourceOpacity, vOpacity)
+
+const vRgba = useVModel(props, 'rgba')
 
 const originalHexColor = ref(EMPTY_STRING)
 const hexColorInputElementRef = ref() as Ref<HTMLInputElement>
 const isRevertOnEscapeKeyDownRef = ref(false)
-const vOpacity = useVModel(props, 'opacity')
 
 function normalizeUserInputColor(string: string): null | string {
   const parsedNamedColor = convertNamedColorToHexColor(string)
@@ -54,23 +62,21 @@ function normalizeUserInputColor(string: string): null | string {
 function createRgbaColor(
   hexColor: string,
   opacity: string
-): null | RGBA {
+): string {
   if (
     hexColor === '' ||
     hexColor === MIXED_STRING ||
     opacity === '' ||
     opacity === MIXED_STRING
   ) {
-    return null
+    return ''
   }
   const rgb = convertHexColorToRgbColor(hexColor)
   if (rgb === null) {
-    return null
+    return ''
   }
-  return {
-    ...rgb,
-    a: parseInt(opacity, 10) / 100
-  }
+  const a = parseInt(opacity, 10) / 100
+  return `rgba(${rgb.r * 255}, ${rgb.g * 255}, ${rgb.b * 255}, ${a})`
 }
 
 function updateHexColor(hexColor: string, delta: number): string {
@@ -121,24 +127,18 @@ function createHexColor(string: string): string {
 }
 
 const normalizedHexColor = computed(() => {
-  return props.hexColor === EMPTY_STRING || props.hexColor === MIXED_STRING
+  return vHexColor.value === EMPTY_STRING || vHexColor.value === MIXED_STRING
     ? 'FFFFFF'
-    : normalizeUserInputColor(props.hexColor)
+    : normalizeUserInputColor(vHexColor.value)
 })
 
 const renderedHexColor = computed(() => {
   return normalizedHexColor.value === null ? originalHexColor : normalizedHexColor.value
 })
 
-function parseOpacity(opacity: string): number {
-  if (opacity === MIXED_STRING || opacity === EMPTY_STRING) {
-    return 1
-  }
-  return parseInt(opacity, 10) / 100
-}
 
 const parsedOpacity = computed(() => {
-  return parseOpacity(vOpacity.value)
+  return vOpacity.value / 100
 })
 
 function handleHexColorSelectorFocus(event: Event) {
@@ -179,18 +179,18 @@ function handleHexColorBlur() {
     isRevertOnEscapeKeyDownRef.value = false
     return
   }
-  if (props.hexColor === EMPTY_STRING) {
+  if (vHexColor.value === EMPTY_STRING) {
     if (originalHexColor.value !== EMPTY_STRING) {
       setHexColorInputElementValue(originalHexColor.value)
     }
     originalHexColor.value = EMPTY_STRING
     return
   }
-  if (props.hexColor !== MIXED_STRING) {
-    const normalizedHexColor = normalizeUserInputColor(props.hexColor)
+  if (vHexColor.value !== MIXED_STRING) {
+    const normalizedHexColor = normalizeUserInputColor(vHexColor.value)
     const newHexColor =
       normalizedHexColor === null ? originalHexColor.value : normalizedHexColor
-    if (newHexColor !== props.hexColor) {
+    if (newHexColor !== vHexColor.value) {
       setHexColorInputElementValue(newHexColor)
     }
   }
@@ -198,25 +198,24 @@ function handleHexColorBlur() {
 }
 
 function handleHexColorFocus(event: Event) {
-  originalHexColor.value = props.hexColor;
+  originalHexColor.value = vHexColor.value;
   (event.currentTarget as HTMLInputElement).select()
 }
 
 function handleHexColorInput(event: Event) {
-  emit('hex-color-input', event)
   const newHexColor = (event.currentTarget as HTMLInputElement).value
-  emit('hex-color-value-input', newHexColor, props.hexColorName)
+  vHexColor.value = newHexColor
   if (newHexColor === EMPTY_STRING) {
-    emit('rgba-color-value-input', null)
+    vRgba.value = ''
     return
   }
   const normalizedHexColor = normalizeUserInputColor(newHexColor)
   if (normalizedHexColor === null) {
-    emit('rgba-color-value-input', null)
+    vRgba.value = ''
     return
   }
-  const rgba = createRgbaColor(normalizedHexColor, props.opacity)
-  emit('rgba-color-value-input', rgba)
+  const rgba = createRgbaColor(normalizedHexColor, vOpacity.value + '')
+  vRgba.value = rgba
 }
 
 function handleHexColorKeyDown(event: KeyboardEvent) {
@@ -242,11 +241,11 @@ function handleHexColorKeyDown(event: KeyboardEvent) {
     event.preventDefault()
     const delta = event.shiftKey === true ? 10 : 1
     const startingHexColor =
-      props.hexColor === EMPTY_STRING || props.hexColor === MIXED_STRING
+      vHexColor.value === EMPTY_STRING || vHexColor.value === MIXED_STRING
         ? key === 'ArrowDown'
           ? 'FFFFFF'
           : '000000'
-        : props.hexColor
+        : vHexColor.value
     const newHexColor = updateHexColor(
       startingHexColor,
       key === 'ArrowDown' ? -1 * delta : delta
@@ -261,15 +260,15 @@ function handleHexColorKeyDown(event: KeyboardEvent) {
 }
 
 function handleHexColorMouseUp(event: MouseEvent) {
-  if (props.hexColor !== MIXED_STRING) {
+  if (vHexColor.value !== MIXED_STRING) {
     return
   }
   event.preventDefault()
 }
 
 watch(vOpacity, (newOpacity) => {
-  const rgba = createRgbaColor(props.hexColor, newOpacity + '')
-  emit('rgba-color-value-input', rgba)
+  const rgba = createRgbaColor(vHexColor.value, newOpacity + '')
+  vRgba.value = rgba
 })
 </script>
 
@@ -322,7 +321,7 @@ watch(vOpacity, (newOpacity) => {
         :spellcheck="false"
         :tabindex="disabled === true ? -1 : 0"
         type="text"
-        :value="hexColor === MIXED_STRING ? 'Mixed' : hexColor"
+        :value="vHexColor === MIXED_STRING ? 'Mixed' : vHexColor"
       />
       <NumInput
         hide-focus
@@ -345,6 +344,7 @@ watch(vOpacity, (newOpacity) => {
   z-index: 1;
   display: flex;
   width: 144px;
+  flex-shrink: 0;
 }
 .textboxColor:focus-within {
   z-index: 2; /* stack `.textboxColor` over its sibling elements */
