@@ -1,4 +1,4 @@
-export const NODE_PLUGIN_DATA_KEY = 'NODE_PLUGIN_DATA_KEY'
+export const SIGMA_PLUGIN_DATA = 'SIGMA_PLUGIN_DATA'
 export const QUX_TYPE = 'quxType'
 export const QUX_ON_CLICK_CALLBACK = 'quxOnClickCallback'
 export const QUX_ON_CHANGE_CALLBACK = 'quxOnChangeCallback'
@@ -38,7 +38,7 @@ export function randomId(): string {
 }
 
 export function getNodeData(node: BaseNode): Record<string, string> {
-  const pluginData = node.getPluginData(NODE_PLUGIN_DATA_KEY)
+  const pluginData = node.getPluginData(SIGMA_PLUGIN_DATA)
   if (pluginData === '') {
     return {}
   }
@@ -50,11 +50,11 @@ export function setNodeData(
   nodeData: Record<string, string>
 ): void {
   if (Object.keys(nodeData).length === 0) {
-    node.setPluginData(NODE_PLUGIN_DATA_KEY, '')
+    node.setPluginData(SIGMA_PLUGIN_DATA, '')
     return
   }
   node.setPluginData(
-    NODE_PLUGIN_DATA_KEY,
+    SIGMA_PLUGIN_DATA,
     JSON.stringify(nodeData)
   )
 }
