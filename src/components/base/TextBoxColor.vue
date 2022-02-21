@@ -40,7 +40,7 @@ const vRgba = useVModel(props, 'rgba')
 
 function getOpacityFromRgba(rgba: string): number {
   const [, , , opacity] = rgba.split(',')
-  return parseFloat(opacity) * 100
+  return parseFloat(opacity || '1') * 100
 }
 
 function getHexFromRgba(rgba: string): string |null  {
@@ -61,14 +61,14 @@ if (sourceHexColor.value)
   syncRef(sourceHexColor, vHexColor)
 
 const sourceOpacity = useVModel(props, 'opacity')
-const vOpacity = ref(getOpacityFromRgba(vRgba.value).toString())
+const vOpacity = ref(getOpacityFromRgba(vRgba.value))
 if (sourceOpacity.value)
   syncRef(sourceOpacity, vOpacity)
 
 
 watch(vRgba, (newValue, oldValue) => {
   vHexColor.value = getHexFromRgba(newValue)
-  vOpacity.value = getOpacityFromRgba(newValue).toString()
+  vOpacity.value = getOpacityFromRgba(newValue)
 })
 const originalHexColor = ref(EMPTY_STRING)
 const hexColorInputElementRef = ref() as Ref<HTMLInputElement>
