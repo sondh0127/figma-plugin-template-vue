@@ -23,7 +23,32 @@ import {
 } from "./utils";
 import { TabGroup, TabList, Tab, TabPanels, TabPanel } from "@headlessui/vue";
 import { Ref } from "vue";
-import { ElementType } from "./types";
+import { DefaultData, DefaultStorage, ElementType, InitData, InitStorage, SyncStorage } from "./types";
+import { on, emit } from "@create-figma-plugin/utilities";
+import { ensureSuffix } from '@antfu/utils'
+
+const figmaData = ref<DefaultData>({
+  fileKey: ''
+})
+on<InitData>("INIT_DATA", (data) => {
+  figmaData.value = data
+})
+
+const figmaStorage = ref<DefaultStorage>({
+  domain: ''
+})
+const { pause, resume } = pausableWatch(figmaStorage, (newValue) => {
+  if (newValue) {
+    emit<SyncStorage>('SYNC_STORAGE', JSON.stringify(newValue))
+  }
+}, { deep: true })
+on<InitStorage>("INIT_STORAGE", async (storage) => {
+  if (!storage) return
+  pause()
+  figmaStorage.value = JSON.parse(storage)
+  await nextTick()
+  resume()
+})
 
 const quxType = useNodeData(QUX_TYPE) as Ref<ElementType>;
 
@@ -60,6 +85,10 @@ const elementTypeOptions = computed(() => {
     {
       label: "Input Field",
       value: "TextBox",
+    },
+    {
+      label: "Button",
+      value: "Button",
     },
     {
       label: "Vector Group",
@@ -140,137 +169,161 @@ const displayOptions = computed(() => {
   ]
 })
 
+
+function syncFile() {
+  const domain = ensureSuffix('/', figmaStorage.value?.domain)
+  const link = `${domain}#/figma/sync?fileUrl=${figmaData.value.fileKey}`
+  window.open(link, '_blank')
+}
+
 </script>
 
 <template>
-  <TabGroup>
-    <TabList class="flex py-1 py-2">
-      <Tab v-slot="{ selected }" as="template">
-        <Title v-if="selected">General</Title>
-        <Label v-else>General</Label>
-      </Tab>
-      <Tab v-slot="{ selected }" as="template">
-        <Title v-if="selected">Options</Title>
-        <Label v-else>Options</Label>
-      </Tab>
-      <Tab v-slot="{ selected }" as="template">
-        <Title v-if="selected">Styles</Title>
-        <Label v-else>Styles</Label>
-      </Tab>
-    </TabList>
-    <TabPanels>
-      <Divider></Divider>
-      <TabPanel>
-        <Title>Element Type</Title>
-        <div class="flex pl-2- pr-1">
-          <Select class="flex-1" :options="elementTypeOptions" v-model:value="quxType" />
-        </div>
-      </TabPanel>
-      <TabPanel>
-        <Title>Method Binding</Title>
-        <div class="flex space-x-2 pl-2 pr-1">
-          <Input class="flex-grow" v-model:value="quxOnClickCallback" />
-          <Label>Click</Label>
-        </div>
-        <div v-if="quxType === 'TextBox'" class="flex space-x-2 pl-2 pr-1">
-          <Input class="flex-grow" v-model:value="quxOnChangeCallback" />
-          <Label>Change</Label>
-        </div>
-
+  <div class="mb-[40px]">
+    <TabGroup>
+      <TabList class="flex py-1 py-2">
+        <Tab v-slot="{ selected }" as="template">
+          <Title v-if="selected">General</Title>
+          <Label v-else>General</Label>
+        </Tab>
+        <Tab v-slot="{ selected }" as="template">
+          <Title v-if="selected">Options</Title>
+          <Label v-else>Options</Label>
+        </Tab>
+        <Tab v-slot="{ selected }" as="template">
+          <Title v-if="selected">Styles</Title>
+          <Label v-else>Styles</Label>
+        </Tab>
+      </TabList>
+      <TabPanels>
         <Divider></Divider>
-        <Title>Data Binding</Title>
-        <div class="flex space-x-2 pl-2 pr-1">
-          <Input class="flex-grow" v-model:value="quxDataBindingDefault" />
-          <Label>Input/Output</Label>
-        </div>
+        <TabPanel>
+          <Title class="!text-yellow-500">Please setup domain to use this plugin</Title>
+          <div class="flex space-x-2 pl-2 pr-1">
+            <Input class="flex-grow w-full" v-model:value="figmaStorage.domain" />
+            <Label>Domain</Label>
+          </div>
 
-        <Divider></Divider>
-        <Title>Data Value</Title>
-        <div class="flex space-x-2 pl-2 pr-1">
-          <Input class="flex-grow" v-model:value="quxDataValue" />
-          <Label>Value</Label>
-        </div>
-      </TabPanel>
-      <TabPanel>
-        <Title>Hover</Title>
-        <div class="flex space-x-2 pl-2 pr-1">
-          <TextBoxColor v-model:rgba="quxStyleHoverBackground" />
+          <Title>Element Type</Title>
+          <div class="flex pl-2- pr-1">
+            <Select class="flex-1" :options="elementTypeOptions" v-model:value="quxType" />
+          </div>
+        </TabPanel>
+        <TabPanel>
+          <Title>Method Binding</Title>
+          <div class="flex space-x-2 pl-2 pr-1">
+            <Input class="flex-grow" v-model:value="quxOnClickCallback" />
+            <Label>Click</Label>
+          </div>
+          <div v-if="quxType === 'TextBox'" class="flex space-x-2 pl-2 pr-1">
+            <Input class="flex-grow" v-model:value="quxOnChangeCallback" />
+            <Label>Change</Label>
+          </div>
 
-          <Label>Fill</Label>
-        </div>
-        <div class="h-2"></div>
-        <div class="flex space-x-2 pl-2 pr-1">
-          <TextBoxColor v-model:rgba="quxStyleHoverBorder" />
+          <Divider></Divider>
+          <Title>Data Binding</Title>
+          <div class="flex space-x-2 pl-2 pr-1">
+            <Input class="flex-grow" v-model:value="quxDataBindingDefault" />
+            <Label>Input/Output</Label>
+          </div>
 
-          <Label>Stroke</Label>
-        </div>
-        <div class="h-2"></div>
-        <div class="flex space-x-2 pl-2 pr-1">
-          <TextBoxColor v-model:rgba="quxStyleHoverColor" />
+          <Divider></Divider>
+          <Title>Data Value</Title>
+          <div class="flex space-x-2 pl-2 pr-1">
+            <Input class="flex-grow" v-model:value="quxDataValue" />
+            <Label>Value</Label>
+          </div>
+        </TabPanel>
+        <TabPanel>
+          <Title>Hover</Title>
+          <div class="flex space-x-2 pl-2 pr-1">
+            <TextBoxColor v-model:rgba="quxStyleHoverBackground" />
 
-          <Label>Text</Label>
-        </div>
+            <Label>Fill</Label>
+          </div>
+          <div class="h-2"></div>
+          <div class="flex space-x-2 pl-2 pr-1">
+            <TextBoxColor v-model:rgba="quxStyleHoverBorder" />
 
-        <Divider></Divider>
+            <Label>Stroke</Label>
+          </div>
+          <div class="h-2"></div>
+          <div class="flex space-x-2 pl-2 pr-1">
+            <TextBoxColor v-model:rgba="quxStyleHoverColor" />
 
-        <Title>Focus</Title>
-        <div class="flex space-x-2 pl-2 pr-1">
-          <TextBoxColor v-model:rgba="quxStyleFocusBackground" />
+            <Label>Text</Label>
+          </div>
 
-          <Label>Fill</Label>
-        </div>
-        <div class="h-2"></div>
-        <div class="flex space-x-2 pl-2 pr-1">
-          <TextBoxColor v-model:rgba="quxStyleFocusBorder" />
-          <Label>Stroke</Label>
-        </div>
-        <div class="h-2"></div>
-        <div class="flex space-x-2 pl-2 pr-1">
-          <TextBoxColor v-model:rgba="quxStyleFocusColor" />
-          <Label>Text</Label>
-        </div>
+          <Divider></Divider>
 
-        <Divider></Divider>
-        <Title>Cursor</Title>
-        <div class="flex space-x-2 pl-2 pr-1">
-          <Radio class="flex-1" :options="cursorOptions" v-model:value="quxStyleCursor" />
-        </div>
+          <Title>Focus</Title>
+          <div class="flex space-x-2 pl-2 pr-1">
+            <TextBoxColor v-model:rgba="quxStyleFocusBackground" />
 
-        <Divider></Divider>
-        <Title>Display</Title>
-        <div class="flex space-x-2 pl-2 pr-1">
-          <Radio class="flex-1" :options="displayOptions" v-model:value="quxStyleDisplay" />
-        </div>
+            <Label>Fill</Label>
+          </div>
+          <div class="h-2"></div>
+          <div class="flex space-x-2 pl-2 pr-1">
+            <TextBoxColor v-model:rgba="quxStyleFocusBorder" />
+            <Label>Stroke</Label>
+          </div>
+          <div class="h-2"></div>
+          <div class="flex space-x-2 pl-2 pr-1">
+            <TextBoxColor v-model:rgba="quxStyleFocusColor" />
+            <Label>Text</Label>
+          </div>
 
-        <Divider></Divider>
-        <Title>Responsive</Title>
-        <div class="flex space-x-2 pl-2 pr-1">
-          <Input class="flex-grow" v-model:value="quxStyleMinWidth" />
-          <Label>Min Width</Label>
-        </div>
-        <div class="flex space-x-2 pl-2 pr-1">
-          <Input class="flex-grow" v-model:value="quxStyleMaxWidth" />
-          <Label>Max Width</Label>
-        </div>
-        <div>
-          <Checkbox v-model:checked="quxWrapContent">Wrap Content</Checkbox>
-        </div>
+          <Divider></Divider>
+          <Title>Cursor</Title>
+          <div class="flex space-x-2 pl-2 pr-1">
+            <Radio class="flex-1" :options="cursorOptions" v-model:value="quxStyleCursor" />
+          </div>
 
-        <Divider></Divider>
-        <Title>Breakpoints</Title>
-        <div class="flex space-x-2 pl-2 pr-1">
-          <Checkbox v-model:checked="quxBreakpointMobile">Phone</Checkbox>
-          <Checkbox v-model:checked="quxBreakpointTablet">Tablet</Checkbox>
-          <Checkbox v-model:checked="quxBreakpointDesktop">Desktop</Checkbox>
-        </div>
+          <Divider></Divider>
+          <Title>Display</Title>
+          <div class="flex space-x-2 pl-2 pr-1">
+            <Radio class="flex-1" :options="displayOptions" v-model:value="quxStyleDisplay" />
+          </div>
 
-        <Divider></Divider>
-      </TabPanel>
-    </TabPanels>
-  </TabGroup>
+          <Divider></Divider>
+          <Title>Responsive</Title>
+          <div class="flex space-x-2 pl-2 pr-1">
+            <Input class="flex-grow" v-model:value="quxStyleMinWidth" />
+            <Label>Min Width</Label>
+          </div>
+          <div class="flex space-x-2 pl-2 pr-1">
+            <Input class="flex-grow" v-model:value="quxStyleMaxWidth" />
+            <Label>Max Width</Label>
+          </div>
+          <div>
+            <Checkbox v-model:checked="quxWrapContent">Wrap Content</Checkbox>
+          </div>
+
+          <Divider></Divider>
+          <Title>Breakpoints</Title>
+          <div class="flex space-x-2 pl-2 pr-1">
+            <Checkbox v-model:checked="quxBreakpointMobile">Phone</Checkbox>
+            <Checkbox v-model:checked="quxBreakpointTablet">Tablet</Checkbox>
+            <Checkbox v-model:checked="quxBreakpointDesktop">Desktop</Checkbox>
+          </div>
+
+          <Divider></Divider>
+        </TabPanel>
+      </TabPanels>
+    </TabGroup>
+  </div>
+  <div class="absolute bottom-0 left-0 h-[40px] w-full flex items-center justify-end">
+    <Button class="mx-[8px]" @click="syncFile">Sync</Button>
+  </div>
 </template>
 
 <style>
+#app {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+}
 *,
 :after,
 :before {

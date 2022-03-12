@@ -25,6 +25,7 @@ export const QUX_BREAKPOINT_MOBILE = 'quxBreakpointMobile'
 export const QUX_BREAKPOINT_TABLET = 'quxBreakpointTablet'
 export const QUX_BREAKPOINT_DESKTOP = 'quxBreakpointDesktop'
 
+// this look bad, we better remove this or model it into separate file then import *
 export const QUX_KEYS = [QUX_TYPE, QUX_ON_CLICK_CALLBACK, QUX_ON_CHANGE_CALLBACK,
   QUX_DATA_BINDING_DEFAULT, QUX_DATA_VALUE, QUX_STYLE_HOVER_BACKGROUND, QUX_STYLE_HOVER_BORDER,
   QUX_STYLE_HOVER_COLOR, QUX_STYLE_FOCUS_BACKGROUND, QUX_STYLE_FOCUS_BORDER, QUX_STYLE_FOCUS_COLOR,

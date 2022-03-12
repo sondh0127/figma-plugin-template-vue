@@ -1,6 +1,9 @@
-import { DataKeys, SingleNodeDataChange } from './types'
+import { DataKeys, DefaultData, InitData, InitStorage, SingleNodeDataChange, SyncStorage } from './types'
 import { getSelectedNodesOrAllNodes, once, on, emit } from '@create-figma-plugin/utilities';
 import { getNodeData, QUX_KEYS, setNodeData } from './utils';
+
+
+const INTERACTIVE_KEY = 'INTERACTIVE_KEY'
 
 function syncSingleNodeData() {
   const node = getSelectedNodesOrAllNodes()[0]
@@ -8,6 +11,20 @@ function syncSingleNodeData() {
   Object.entries(nodeData).forEach(([key, value]) => {
     emit<SingleNodeDataChange>('SINGLE_NODE_DATA_CHANGE', key as DataKeys, value)
   })
+}
+
+async function initData() {
+  const data: DefaultData = {
+    fileKey: figma.fileKey,
+  }
+  console.log('[LOG] ~ file: code.ts ~ line 17 ~ data', data)
+  emit<InitData>('INIT_DATA',data)
+}
+
+async function initStorage() {
+  const storage = await figma.clientStorage.getAsync(INTERACTIVE_KEY)
+  console.log('[LOG] ~ file: code.ts ~ line 17 ~ storage', storage)
+  emit<InitStorage>('INIT_STORAGE', storage)
 }
 
 on<SingleNodeDataChange>('SINGLE_NODE_DATA_CHANGE', (key, data) => {
@@ -18,8 +35,14 @@ on<SingleNodeDataChange>('SINGLE_NODE_DATA_CHANGE', (key, data) => {
   setNodeData(node, nodeData)
 })
 
-figma.on('run', () => {
+on<SyncStorage>('SYNC_STORAGE', (data) => {
+  figma.clientStorage.setAsync(INTERACTIVE_KEY, data)
+})
+
+figma.on('run', async () => {
+  initData()
   syncSingleNodeData()
+  await initStorage()
 })
 
 figma.on('selectionchange', () => {
@@ -30,7 +53,8 @@ figma.on('selectionchange', () => {
   syncSingleNodeData()
 })
 
+
 figma.showUI(__html__, {
-  width: 300,
-  height: 500
+  width: 240,
+  height: 480
 });
