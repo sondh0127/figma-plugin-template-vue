@@ -1,29 +1,8 @@
 <script lang="ts" setup>
 import { useNodeData } from "./logics";
-import {
-  QUX_TYPE,
-  QUX_ON_CLICK_CALLBACK,
-  QUX_ON_CHANGE_CALLBACK,
-  QUX_DATA_BINDING_DEFAULT,
-  QUX_DATA_VALUE,
-  QUX_STYLE_HOVER_BORDER,
-  QUX_STYLE_HOVER_BACKGROUND,
-  QUX_STYLE_HOVER_COLOR,
-  QUX_STYLE_FOCUS_BACKGROUND,
-  QUX_STYLE_FOCUS_BORDER,
-  QUX_STYLE_FOCUS_COLOR,
-  QUX_STYLE_CURSOR,
-  QUX_STYLE_DISPLAY,
-  QUX_STYLE_MAX_WIDTH,
-  QUX_STYLE_MIN_WIDTH,
-  QUX_WRAP_CONTENT,
-  QUX_BREAKPOINT_MOBILE,
-  QUX_BREAKPOINT_TABLET,
-  QUX_BREAKPOINT_DESKTOP,
-} from "./utils";
 import { TabGroup, TabList, Tab, TabPanels, TabPanel } from "@headlessui/vue";
 import { Ref } from "vue";
-import { DefaultData, DefaultStorage, ElementType, InitData, InitStorage, SyncStorage } from "./types";
+import { CurrentSelection, DefaultData, DefaultStorage, ElementType, InitData, InitStorage, IsTopNode, SyncStorage } from "./types";
 import { on, emit } from "@create-figma-plugin/utilities";
 import { ensureSuffix } from '@antfu/utils'
 
@@ -50,31 +29,47 @@ on<InitStorage>("INIT_STORAGE", async (storage) => {
   resume()
 })
 
-const quxType = useNodeData(QUX_TYPE) as Ref<ElementType>;
+const isTopNode = ref(false)
+on<IsTopNode>('IsTopNode', (value) => {
+  isTopNode.value = value
+})
 
-const quxOnClickCallback = useNodeData(QUX_ON_CLICK_CALLBACK);
-const quxOnChangeCallback = useNodeData(QUX_ON_CHANGE_CALLBACK);
-const quxDataBindingDefault = useNodeData(QUX_DATA_BINDING_DEFAULT);
-const quxDataValue = useNodeData(QUX_DATA_VALUE);
+const currentSelection = ref<string>()
+on<CurrentSelection>('CurrentSelection', (value) => {
+  currentSelection.value = value
+})
 
-const quxStyleHoverBackground = useNodeData(QUX_STYLE_HOVER_BACKGROUND);
-const quxStyleHoverBorder = useNodeData(QUX_STYLE_HOVER_BORDER);
-const quxStyleHoverColor = useNodeData(QUX_STYLE_HOVER_COLOR);
 
-const quxStyleFocusBackground = useNodeData(QUX_STYLE_FOCUS_BACKGROUND);
-const quxStyleFocusBorder = useNodeData(QUX_STYLE_FOCUS_BORDER);
-const quxStyleFocusColor = useNodeData(QUX_STYLE_FOCUS_COLOR);
+const quxStartScreen = useNodeData('quxStartScreen');
+const quxOverlayScreen = useNodeData('quxOverlayScreen');
+const quxHasOverlayBackground = useNodeData('quxHasOverlayBackground');
+const quxOnLoadCallback = useNodeData('quxOnLoadCallback');
 
-const quxStyleCursor = useNodeData(QUX_STYLE_CURSOR);
-const quxStyleDisplay = useNodeData(QUX_STYLE_DISPLAY);
+const quxType = useNodeData('quxType') as Ref<ElementType>;
 
-const quxStyleMinWidth = useNodeData(QUX_STYLE_MIN_WIDTH);
-const quxStyleMaxWidth = useNodeData(QUX_STYLE_MAX_WIDTH);
-const quxWrapContent = useNodeData(QUX_WRAP_CONTENT);
+const quxOnClickCallback = useNodeData('quxOnClickCallback');
+const quxOnChangeCallback = useNodeData('quxOnChangeCallback');
+const quxDataBindingDefault = useNodeData('quxDataBindingDefault');
+const quxDataValue = useNodeData('quxDataValue');
 
-const quxBreakpointMobile = useNodeData(QUX_BREAKPOINT_MOBILE);
-const quxBreakpointTablet = useNodeData(QUX_BREAKPOINT_TABLET);
-const quxBreakpointDesktop = useNodeData(QUX_BREAKPOINT_DESKTOP);
+const quxStyleHoverBackground = useNodeData('quxStyleHoverBackground');
+const quxStyleHoverBorder = useNodeData('quxStyleHoverBorder');
+const quxStyleHoverColor = useNodeData('quxStyleHoverColor');
+
+const quxStyleFocusBackground = useNodeData('quxStyleFocusBackground');
+const quxStyleFocusBorder = useNodeData('quxStyleFocusBorder');
+const quxStyleFocusColor = useNodeData('quxStyleFocusColor');
+
+const quxStyleCursor = useNodeData('quxStyleCursor');
+const quxStyleDisplay = useNodeData('quxStyleDisplay');
+
+const quxStyleMinWidth = useNodeData('quxStyleMinWidth');
+const quxStyleMaxWidth = useNodeData('quxStyleMaxWidth');
+const quxWrapContent = useNodeData('quxWrapContent');
+
+const quxBreakpointMobile = useNodeData('quxBreakpointMobile');
+const quxBreakpointTablet = useNodeData('quxBreakpointTablet');
+const quxBreakpointDesktop = useNodeData('quxBreakpointDesktop');
 
 const elementTypeOptions = computed(() => {
   return [
@@ -180,7 +175,22 @@ function syncFile() {
 
 <template>
   <div class="mb-[40px]">
-    <TabGroup>
+    <div v-if="!currentSelection">No current selection</div>
+    <div v-else-if="isTopNode">
+      <Title>Screen</Title>
+      <div class="pl-2 pr-1">
+        <Checkbox v-model:checked="quxStartScreen">Start Screen</Checkbox>
+        <Checkbox v-model:checked="quxOverlayScreen">Overlay</Checkbox>
+        <Checkbox class="pl-5" v-if="quxOverlayScreen" v-model:checked="quxHasOverlayBackground">Keep Background</Checkbox>
+      </div>
+      <Divider></Divider>
+      <Title>Method Binding</Title>
+      <div class="flex space-x-2 pl-2 pr-1">
+        <Input class="flex-grow w-full" v-model:value="quxOnLoadCallback" />
+        <Label>On page load</Label>
+      </div>
+    </div>
+    <TabGroup v-else>
       <TabList class="flex py-1 py-2">
         <Tab v-slot="{ selected }" as="template">
           <Title v-if="selected">General</Title>
@@ -198,7 +208,10 @@ function syncFile() {
       <TabPanels>
         <Divider></Divider>
         <TabPanel>
-          <Title class="!text-yellow-500">Please setup domain to use this plugin</Title>
+          <Title
+            v-if="!figmaStorage.domain"
+            class="!text-yellow-500"
+          >Please setup domain to use this plugin</Title>
           <div class="flex space-x-2 pl-2 pr-1">
             <Input class="flex-grow w-full" v-model:value="figmaStorage.domain" />
             <Label>Domain</Label>

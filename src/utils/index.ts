@@ -1,36 +1,12 @@
 export const SIGMA_PLUGIN_DATA = 'SIGMA_PLUGIN_DATA'
-export const QUX_TYPE = 'quxType'
-export const QUX_ON_CLICK_CALLBACK = 'quxOnClickCallback'
-export const QUX_ON_CHANGE_CALLBACK = 'quxOnChangeCallback'
-export const QUX_DATA_BINDING_DEFAULT = 'quxDataBindingDefault'
-export const QUX_DATA_VALUE = 'quxDataValue'
-
-export const QUX_STYLE_HOVER_BACKGROUND = 'quxStyleHoverBackground'
-export const QUX_STYLE_HOVER_BORDER = 'quxStyleHoverBorder'
-export const QUX_STYLE_HOVER_COLOR = 'quxStyleHoverColor'
-
-export const QUX_STYLE_FOCUS_BACKGROUND = 'quxStyleFocusBackground'
-export const QUX_STYLE_FOCUS_BORDER = 'quxStyleFocusBorder'
-export const QUX_STYLE_FOCUS_COLOR = 'quxStyleFocusColor'
-
-export const QUX_STYLE_CURSOR = 'quxStyleCursor'
-export const QUX_STYLE_DISPLAY = 'quxStyleDisplay'
-
-export const QUX_STYLE_MIN_WIDTH = 'quxStyleMinWidth'
-export const QUX_STYLE_MAX_WIDTH = 'quxStyleMaxWidth'
-
-export const QUX_WRAP_CONTENT = 'quxWrapContent'
-
-export const QUX_BREAKPOINT_MOBILE = 'quxBreakpointMobile'
-export const QUX_BREAKPOINT_TABLET = 'quxBreakpointTablet'
-export const QUX_BREAKPOINT_DESKTOP = 'quxBreakpointDesktop'
 
 // this look bad, we better remove this or model it into separate file then import *
-export const QUX_KEYS = [QUX_TYPE, QUX_ON_CLICK_CALLBACK, QUX_ON_CHANGE_CALLBACK,
-  QUX_DATA_BINDING_DEFAULT, QUX_DATA_VALUE, QUX_STYLE_HOVER_BACKGROUND, QUX_STYLE_HOVER_BORDER,
-  QUX_STYLE_HOVER_COLOR, QUX_STYLE_FOCUS_BACKGROUND, QUX_STYLE_FOCUS_BORDER, QUX_STYLE_FOCUS_COLOR,
-  QUX_STYLE_CURSOR, QUX_STYLE_DISPLAY, QUX_STYLE_MIN_WIDTH, QUX_STYLE_MAX_WIDTH, QUX_WRAP_CONTENT,
-  QUX_BREAKPOINT_MOBILE, QUX_BREAKPOINT_TABLET, QUX_BREAKPOINT_DESKTOP
+export const QUX_KEYS = ['quxType', 'quxOnClickCallback', 'quxOnChangeCallback',
+  'quxDataBindingDefault', 'quxDataValue', 'quxStyleHoverBackground', 'quxStyleHoverBorder',
+  'quxStyleHoverColor', 'quxStyleFocusBackground', 'quxStyleFocusBorder', 'quxStyleFocusColor',
+  'quxStyleCursor', 'quxStyleDisplay', 'quxStyleMinWidth', 'quxStyleMaxWidth',
+  'quxWrapContent', 'quxBreakpointMobile', 'quxBreakpointTablet', 'quxBreakpointDesktop',
+  'quxStartScreen', 'quxOverlayScreen', 'quxHasOverlayBackground', 'quxOnLoadCallback'
 ]
 
 export function randomId(): string {
