@@ -2,7 +2,7 @@
 import { useNodeData } from "./logics";
 import { TabGroup, TabList, Tab, TabPanels, TabPanel } from "@headlessui/vue";
 import { Ref } from "vue";
-import { CurrentSelection, DefaultData, DefaultStorage, ElementType, InitData, InitStorage, IsTopNode, SyncStorage } from "./types";
+import { CurrentSelection, DefaultData, DefaultStorage, ElementType, InitData, InitStorage, IsTopNode, SyncCurrentNodeData, SyncStorage } from "./types";
 import { on, emit } from "@create-figma-plugin/utilities";
 import { ensureSuffix } from '@antfu/utils'
 
@@ -70,6 +70,8 @@ const quxWrapContent = useNodeData('quxWrapContent');
 const quxBreakpointMobile = useNodeData('quxBreakpointMobile');
 const quxBreakpointTablet = useNodeData('quxBreakpointTablet');
 const quxBreakpointDesktop = useNodeData('quxBreakpointDesktop');
+
+const quxReactions = useNodeData('quxReactions');
 
 const elementTypeOptions = computed(() => {
   return [
@@ -171,6 +173,10 @@ function syncFile() {
   window.open(link, '_blank')
 }
 
+function syncNodePluginData() {
+  emit<SyncCurrentNodeData>('SyncCurrentNodeData')
+}
+
 </script>
 
 <template>
@@ -181,7 +187,11 @@ function syncFile() {
       <div class="pl-2 pr-1">
         <Checkbox v-model:checked="quxStartScreen">Start Screen</Checkbox>
         <Checkbox v-model:checked="quxOverlayScreen">Overlay</Checkbox>
-        <Checkbox class="pl-5" v-if="quxOverlayScreen" v-model:checked="quxHasOverlayBackground">Keep Background</Checkbox>
+        <Checkbox
+          class="pl-5"
+          v-if="quxOverlayScreen"
+          v-model:checked="quxHasOverlayBackground"
+        >Keep Background</Checkbox>
       </div>
       <Divider></Divider>
       <Title>Method Binding</Title>
@@ -221,6 +231,8 @@ function syncFile() {
           <div class="flex pl-2- pr-1">
             <Select class="flex-1" :options="elementTypeOptions" v-model:value="quxType" />
           </div>
+          <Title>Sync Node Data</Title>
+          <Button class="mx-[8px]" @click="syncNodePluginData">Sync Data</Button>
         </TabPanel>
         <TabPanel>
           <Title>Method Binding</Title>

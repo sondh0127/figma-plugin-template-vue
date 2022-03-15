@@ -40,3 +40,9 @@ export interface CurrentSelection extends EventHandler {
   name: 'CurrentSelection'
   handler: (currentSelection?: string) => void
 }
+
+
+export interface SyncCurrentNodeData extends EventHandler {
+  name: 'SyncCurrentNodeData'
+  handler: () => void
+}

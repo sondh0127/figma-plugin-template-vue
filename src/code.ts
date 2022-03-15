@@ -1,5 +1,5 @@
-import { CurrentSelection, DefaultData, InitData, InitStorage, IsTopNode, SingleNodeDataChange, SyncStorage } from './types'
-import { getSelectedNodesOrAllNodes, on, emit, traverseNodeAsync, getParentNode } from '@create-figma-plugin/utilities';
+import { CurrentSelection, DefaultData, InitData, InitStorage, IsTopNode, SingleNodeDataChange, SyncCurrentNodeData, SyncStorage } from './types'
+import { on, emit, traverseNodeAsync, getParentNode } from '@create-figma-plugin/utilities';
 import { getNodeData, QUX_KEYS, setNodeData } from './utils';
 
 
@@ -26,6 +26,7 @@ async function getCharacter(node: SceneNode) {
 
 async function syncSingleNodeData() {
   const node = figma.currentPage.selection[0]
+  console.log('[LOG] ~ file: code.ts ~ line 29 ~ node', node)
   if (!node) {
     emit<CurrentSelection>('CurrentSelection', undefined)
   } else {
@@ -34,9 +35,13 @@ async function syncSingleNodeData() {
     const isTopNode = getParentNode(node).type === 'PAGE'
     emit<IsTopNode>('IsTopNode', isTopNode)
     const quxDataValue = await getCharacter(node)
+
+    const quxReactions = JSON.stringify(node.reactions)
+
     const nodeData = {
       quxDataValue,
-      ...getNodeData(node)
+      ...getNodeData(node),
+      quxReactions,
     }
     Object.entries(nodeData).forEach(([key, value]) => {
       emit<SingleNodeDataChange>('SINGLE_NODE_DATA_CHANGE', key, value)
@@ -67,6 +72,10 @@ on<SingleNodeDataChange>('SINGLE_NODE_DATA_CHANGE', (key, data) => {
 
 on<SyncStorage>('SYNC_STORAGE', (data) => {
   figma.clientStorage.setAsync(INTERACTIVE_KEY, data)
+})
+
+on<SyncCurrentNodeData>('SyncCurrentNodeData', async () => {
+  await syncSingleNodeData()
 })
 
 figma.on('run', async () => {
